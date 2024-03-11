@@ -16,7 +16,7 @@ const AppController = {
     } catch (error) {
       console.error('Error getting stats:', error);
     }
-  }
+  },
 };
 
 module.exports = AppController;
