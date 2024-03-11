@@ -1,7 +1,6 @@
-const dbClient = require('../utils/db');
-const redisClient = require('../utils/redis');
-
 import sha1 from 'sha1';
+
+const dbClient = require('../utils/db');
 
 const UsersController = {
   async postNew(req, res) {
@@ -11,18 +10,18 @@ const UsersController = {
 
       // Check if email is missing
       if (!email) {
-        return res.json({ error: 'Missing email' });
+        return res.status(400).json({ error: 'Missing email' });
       }
 
       // Check if password is missing
       if (!password) {
-        return res.json({ error: 'Missing password' });
+        return res.status(400).json({ error: 'Missing password' });
       }
 
       // Check if email already exists in DB
       const existingUser = await dbClient.getUserByEmail(email);
       if (existingUser) {
-        return res.json({ error: 'Email already exists' });
+        return res.status(400).json({ error: 'Already exist' });
       }
 
       // Hash the password using SHA1
