@@ -55,6 +55,15 @@ class DBClient {
     return this.db.collection('users').findOne({ email });
   }
 
+  async getUserById(userId) {
+    if (!this.db) {
+      throw new Error('Database not connected');
+    }
+
+    // Retrieve the user by ID from the users collection
+    return this.db.collection('users').findOne({ _id: userId });
+  }
+
   async nbUsers() {
     if (!this.db) {
       throw new Error('Database not connected');
