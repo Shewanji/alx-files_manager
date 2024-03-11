@@ -1,4 +1,5 @@
-const { MongoClient } = require('mongodb');
+import { MongoClient } from 'mongodb';
+import sha1 from 'sha1';
 
 class DBClient {
   constructor() {
@@ -24,6 +25,34 @@ class DBClient {
 
   isAlive() {
     return this.connected;
+  }
+
+  async insertUser(email, password) {
+    if (!this.db) {
+      throw new Error('Database not connected');
+    }
+
+    // Check if the user already exists
+    const existingUser = await this.db.collection('users').findOne({ email });
+    if (existingUser) {
+      throw new Error('Email already exists');
+    }
+
+    // Hash the password using SHA1
+    const hashedPassword = sha1(password);
+
+    // Insert the new user into the users collection
+    const result = await this.db.collection('users').insertOne({ email, password: hashedPassword });
+    return result.ops[0];
+  }
+
+  async getUserByEmail(email) {
+    if (!this.db) {
+      throw new Error('Database not connected');
+    }
+
+    // Retrieve the user by email from the users collection
+    return this.db.collection('users').findOne({ email });
   }
 
   async nbUsers() {
