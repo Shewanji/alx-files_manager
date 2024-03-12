@@ -81,6 +81,34 @@ class DBClient {
     }
     return this.db.collection('files').countDocuments();
   }
+
+  async insertFile(fileData) {
+    if (!this.db) {
+      throw new Error('Database not connected');
+    }
+
+    // Clone the fileData object to avoid modifying the original object
+    const data = { ...fileData };
+
+    // Add user ID to file data
+    data.userId = ObjectId(data.userId);
+
+    // Insert the new file into the files collection
+    const result = await this.db.collection('files').insertOne(data);
+    return result.ops[0];
+  }
+
+  async getFileById(fileId) {
+    if (!this.db) {
+      throw new Error('Database not connected');
+    }
+
+    // Convert fileId string to ObjectId
+    const objectIdFileId = new ObjectId(fileId);
+
+    // Retrieve the file by ID from the files collection
+    return this.db.collection('files').findOne({ _id: objectIdFileId });
+  }
 }
 
 const dbClient = new DBClient();
