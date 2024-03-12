@@ -32,7 +32,7 @@ class UsersController {
       const newUser = await dbClient.insertUser(email, hashedPassword);
 
       // Return the new user with email and id only
-      return res.status(201).json({ email: newUser.email, id: newUser._id });
+      return res.status(201).json({ id: newUser._id, email: newUser.email });
     } catch (error) {
       console.error('Error creating user:', error);
       return res.status(500).json({ error: 'Internal Server Error' });
@@ -72,7 +72,7 @@ class UsersController {
       }
 
       // Return user details
-      return res.status(200).json({ email: user.email, id: user._id });
+      return res.status(200).json({ id: user._id, email: user.email });
     } catch (error) {
       console.error('Error retrieving user:', error);
       return res.status(500).json({ error: 'Internal Server Error' });
