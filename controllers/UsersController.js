@@ -1,10 +1,10 @@
-import sha1 from 'sha1';
+const sha1 = require('sha1');
 
 const dbClient = require('../utils/db');
 const redisClient = require('../utils/redis');
 
-const UsersController = {
-  async postNew(req, res) {
+class UsersController {
+  static async postNew(req, res) {
     try {
       // Extract email and password from request body
       const { email, password } = req.body;
@@ -37,12 +37,14 @@ const UsersController = {
       console.error('Error creating user:', error);
       return res.status(500).json({ error: 'Internal Server Error' });
     }
-  },
+  }
 
-  async getMe(req, res) {
+  static async getMe(req, res) {
     try {
-      // Retrieve token from request headers
+    // Retrieve token from request headers
       const token = req.headers['x-token'];
+
+      console.log('Token:', token); // Log token value
 
       // If token not found, return unauthorized
       if (!token) {
@@ -52,6 +54,8 @@ const UsersController = {
       // Retrieve user ID from Redis using token
       const userId = await redisClient.get(`auth_${token}`);
 
+      console.log('User ID:', userId); // Log user ID retrieved from Redis
+
       // If user ID not found, return unauthorized
       if (!userId) {
         return res.status(401).json({ error: 'Unauthorized' });
@@ -59,6 +63,8 @@ const UsersController = {
 
       // Retrieve user from database using user ID
       const user = await dbClient.getUserById(userId);
+
+      console.log('User:', user); // Log user retrieved from database
 
       // If user not found, return unauthorized
       if (!user) {
@@ -71,7 +77,7 @@ const UsersController = {
       console.error('Error retrieving user:', error);
       return res.status(500).json({ error: 'Internal Server Error' });
     }
-  },
-};
+  }
+}
 
 module.exports = UsersController;

@@ -3,8 +3,8 @@ const sha1 = require('sha1');
 const redisClient = require('../utils/redis');
 const dbClient = require('../utils/db');
 
-const AuthController = {
-  async getConnect(req, res) {
+class AuthController {
+  static async getConnect(req, res) {
     try {
       // Extract Basic Auth credentials from the Authorization header
       const authHeader = req.headers.authorization;
@@ -26,7 +26,7 @@ const AuthController = {
       const token = uuidv4();
 
       // Store token in Redis
-      await redisClient.set(`auth_${token}`, user._id, 86400); // 24 hours
+      await redisClient.set(`auth_${token}`, user._id.toString(), 86400); // 24 hours
 
       // Return token
       return res.status(200).json({ token });
@@ -34,9 +34,9 @@ const AuthController = {
       console.error('Error signing in user:', error);
       return res.status(500).json({ error: 'Internal Server Error' });
     }
-  },
+  }
 
-  async getDisconnect(req, res) {
+  static async getDisconnect(req, res) {
     try {
       // Retrieve token from request headers
       const token = req.headers['x-token'];
@@ -55,7 +55,7 @@ const AuthController = {
       console.error('Error signing out user:', error);
       return res.status(500).json({ error: 'Internal Server Error' });
     }
-  },
-};
+  }
+}
 
 module.exports = AuthController;

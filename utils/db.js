@@ -1,6 +1,8 @@
 import { MongoClient } from 'mongodb';
 import sha1 from 'sha1';
 
+const { ObjectId } = require('mongodb');
+
 class DBClient {
   constructor() {
     const host = process.env.DB_HOST || 'localhost';
@@ -35,7 +37,7 @@ class DBClient {
     // Check if the user already exists
     const existingUser = await this.db.collection('users').findOne({ email });
     if (existingUser) {
-      throw new Error('Email already exists');
+      throw new Error('Already exist');
     }
 
     // Hash the password using SHA1
@@ -50,7 +52,6 @@ class DBClient {
     if (!this.db) {
       throw new Error('Database not connected');
     }
-
     // Retrieve the user by email from the users collection
     return this.db.collection('users').findOne({ email });
   }
@@ -60,8 +61,11 @@ class DBClient {
       throw new Error('Database not connected');
     }
 
+    // Convert userId string to ObjectId
+    const objectIdUserId = new ObjectId(userId);
+
     // Retrieve the user by ID from the users collection
-    return this.db.collection('users').findOne({ _id: userId });
+    return this.db.collection('users').findOne({ _id: objectIdUserId });
   }
 
   async nbUsers() {
