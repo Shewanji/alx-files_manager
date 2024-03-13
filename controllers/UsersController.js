@@ -1,5 +1,6 @@
-const sha1 = require('sha1');
+import { ObjectId } from 'mongodb';
 
+const sha1 = require('sha1');
 const dbClient = require('../utils/db');
 const redisClient = require('../utils/redis');
 
@@ -20,7 +21,7 @@ class UsersController {
       }
 
       // Check if email already exists in DB
-      const existingUser = await dbClient.getUserByEmail(email);
+      const existingUser = await dbClient.db.collection('users').findOne({ email });
       if (existingUser) {
         return res.status(400).json({ error: 'Already exist' });
       }
@@ -29,7 +30,7 @@ class UsersController {
       const hashedPassword = sha1(password);
 
       // Insert the new user into the database
-      const newUser = await dbClient.insertUser(email, hashedPassword);
+      const newUser = await dbClient.db.collection('users').insertOne({ email, password: hashedPassword });
 
       // Return the new user with email and id only
       return res.status(201).json({ id: newUser._id, email: newUser.email });
@@ -41,38 +42,19 @@ class UsersController {
 
   static async getMe(req, res) {
     try {
-    // Retrieve token from request headers
-      const token = req.headers['x-token'];
+      const token = req.header('X-Token');
+      if (!token) return res.status(401).json({ error: 'Unauthorized' });
 
-      console.log('Token:', token); // Log token value
-
-      // If token not found, return unauthorized
-      if (!token) {
-        return res.status(401).json({ error: 'Unauthorized' });
-      }
-
-      // Retrieve user ID from Redis using token
       const userId = await redisClient.get(`auth_${token}`);
+      if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
-      console.log('User ID:', userId); // Log user ID retrieved from Redis
+      const usersCollection = dbClient.db.collection('users');
+      const ObjId = new ObjectId(userId);
 
-      // If user ID not found, return unauthorized
-      if (!userId) {
-        return res.status(401).json({ error: 'Unauthorized' });
-      }
+      const user = await usersCollection.findOne({ _id: ObjId });
 
-      // Retrieve user from database using user ID
-      const user = await dbClient.getUserById(userId);
-
-      console.log('User:', user); // Log user retrieved from database
-
-      // If user not found, return unauthorized
-      if (!user) {
-        return res.status(401).json({ error: 'Unauthorized' });
-      }
-
-      // Return user details
-      return res.status(200).json({ id: user._id, email: user.email });
+      if (user) return res.status(200).json({ id: userId, email: user.email });
+      return res.status(401).json({ error: 'Unauthorized' });
     } catch (error) {
       console.error('Error retrieving user:', error);
       return res.status(500).json({ error: 'Internal Server Error' });

@@ -1,7 +1,4 @@
-import { MongoClient } from 'mongodb';
-import sha1 from 'sha1';
-
-const { ObjectId } = require('mongodb');
+const { MongoClient } = require('mongodb');
 
 class DBClient {
   constructor() {
@@ -29,45 +26,6 @@ class DBClient {
     return this.connected;
   }
 
-  async insertUser(email, password) {
-    if (!this.db) {
-      throw new Error('Database not connected');
-    }
-
-    // Check if the user already exists
-    const existingUser = await this.db.collection('users').findOne({ email });
-    if (existingUser) {
-      throw new Error('Already exist');
-    }
-
-    // Hash the password using SHA1
-    const hashedPassword = sha1(password);
-
-    // Insert the new user into the users collection
-    const result = await this.db.collection('users').insertOne({ email, password: hashedPassword });
-    return result.ops[0];
-  }
-
-  async getUserByEmail(email) {
-    if (!this.db) {
-      throw new Error('Database not connected');
-    }
-    // Retrieve the user by email from the users collection
-    return this.db.collection('users').findOne({ email });
-  }
-
-  async getUserById(userId) {
-    if (!this.db) {
-      throw new Error('Database not connected');
-    }
-
-    // Convert userId string to ObjectId
-    const objectIdUserId = new ObjectId(userId);
-
-    // Retrieve the user by ID from the users collection
-    return this.db.collection('users').findOne({ _id: objectIdUserId });
-  }
-
   async nbUsers() {
     if (!this.db) {
       throw new Error('Database not connected');
@@ -80,34 +38,6 @@ class DBClient {
       throw new Error('Database not connected');
     }
     return this.db.collection('files').countDocuments();
-  }
-
-  async insertFile(fileData) {
-    if (!this.db) {
-      throw new Error('Database not connected');
-    }
-
-    // Clone the fileData object to avoid modifying the original object
-    const data = { ...fileData };
-
-    // Add user ID to file data
-    data.userId = ObjectId(data.userId);
-
-    // Insert the new file into the files collection
-    const result = await this.db.collection('files').insertOne(data);
-    return result.ops[0];
-  }
-
-  async getFileById(fileId) {
-    if (!this.db) {
-      throw new Error('Database not connected');
-    }
-
-    // Convert fileId string to ObjectId
-    const objectIdFileId = new ObjectId(fileId);
-
-    // Retrieve the file by ID from the files collection
-    return this.db.collection('files').findOne({ _id: objectIdFileId });
   }
 }
 
