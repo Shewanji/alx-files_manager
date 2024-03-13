@@ -1,4 +1,4 @@
-import { ObjectId } from 'mongodb';
+const { ObjectId } = require('mongodb');
 
 const sha1 = require('sha1');
 const dbClient = require('../utils/db');
