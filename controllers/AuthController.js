@@ -1,5 +1,4 @@
 const { v4: uuidv4 } = require('uuid');
-const sha1 = require('sha1');
 const redisClient = require('../utils/redis');
 const dbClient = require('../utils/db');
 
@@ -14,9 +13,9 @@ class AuthController {
 
       const encodedCredentials = authHeader.split(' ')[1];
       const decodedCredentials = Buffer.from(encodedCredentials, 'base64').toString();
-      const [email, password] = decodedCredentials.split(':');
+      const [email] = decodedCredentials.split(':');
 
-      // Find user by email and password
+      // Find user by email
       const user = await dbClient.db.collection('users').findOne({ email });
       if (!user) {
         return res.status(401).json({ error: 'Unauthorized' });
